@@ -219,11 +219,11 @@ void excluir_livros(Livros *l, int id) {
 
 int main(void) {
     srand(time(NULL));
-    // Usuarios usuarios;
-    //inic_usuarios(&usuarios);
-    //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
-    //inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
-    // listar_usuarios(&usuarios, -1);
+    Usuarios usuarios;
+    inic_usuarios(&usuarios);
+    inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
+    inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
+     listar_usuarios(&usuarios, -1);
     Autores a;
     inic_autores(&a);
     inserir_autores(&a, "enzo enzo enzo", "ceferno");
