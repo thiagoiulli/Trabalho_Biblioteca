@@ -9,7 +9,7 @@ struct Autor{
 }Autor;
 
 typedef struct { //vetor dinamico de Autor
-    struct Autor *escritores;
+    struct Autor *autores;
     size_t size; //size = qnts pessoas tem no vetor
     size_t capacity; //capacity = qnts pessoas cabem no vetor
 } Autores;
@@ -109,15 +109,15 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
 }
 
 void inic_autores(Autores *a){
-    a->escritores = NULL;
+    a->autores = NULL;
     a->capacity =0;
     a->size = 0;
 }
 
 int listar_autores(Autores *a){
     for (int i = 0; i < a->size; i++){
-        printf("Autor %d: %s", i, a->escritores[i].nome);
-        printf("Instituição: %s", a->escritores[i].instituicao);
+        printf("Autor %d: %s", i, a->autores[i].nome);
+        printf("Instituição: %s", a->autores[i].instituicao);
     }
 }
 
@@ -131,16 +131,14 @@ void inserir_autor(struct Autor *a, char *nm, char *inst){
     
 }
 
-
-/*void inserir_autores(Autores *a, char nm, char inst){ TEM Q OLHAR ISSO AQUI
+void inserir_autores(Autores *a, char nm, char inst){ 
     if (a->capacity == a->size) {
-        a->escritores = realloc(a->escritores, sizeof(struct Autor) * (a->size + 1));
+        a->autores = realloc(a->autores, sizeof(struct Autor) * (a->size + 1));
         a->capacity++;
     }
-
-    inserir_autor(&a->escritores[a->size], nm, inst);
+    inserir_autor(&a->autores[a->size], nm, inst);
     a->size++;
-}*/
+}
 
 void inic_livros(Livros *l) {
     l->livro = NULL;
@@ -153,13 +151,13 @@ int listar_livros(Livros *l, int id){
         for (int i = 0; i < l->size; i++){
             printf("Livro %i:\n", (i+1));
             printf("Identificador: %d\n", id);
-            printf("Titulo: %s", l->livro[i].titulo);
+            printf("Titulo: %s\n", l->livro[i].titulo);
             //printf("Autores")
-            printf("Ano: %d", l->livro[i].ano);
-            printf("Edição: %d", l->livro[i].edicao);
-            printf("Editora: %s", l->livro[i].editora);
-
+            printf("Ano: %d\n", l->livro[i].ano);
+            printf("Edição: %d\n", l->livro[i].edicao);
+            printf("Editora: %s\n", l->livro[i].editora);
         }
+        return 0;
     }
 
     else {
@@ -177,9 +175,32 @@ int listar_livros(Livros *l, int id){
         }
         return -1;
     }
-
 }
 
+void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit){
+    int id = rand_int();
+    if (listar_livros(l,id) == -1){
+        if (l->size >= l->capacity){
+            l->livro = realloc(l->livro, sizeof(struct Livro) * (l->size + 1));
+            l->capacity++;
+        }
+        
+        l->livro[l->size].identificador = id;
+        l->livro[l->size].ano = ano;
+        l->livro[l->size].edicao = ed;
+        l->livro[l->size].titulo = malloc(strlen(t) + 1);
+        strcpy(l->livro[l->size].titulo, t);
+        l->livro[l->size].editora = malloc(strlen(edit) + 1);
+        strcpy(l->livro[l->size].editora, edit);
+        /*l->livro[l->size].autores = malloc(sizeof(Autores));
+        l->livro[l->size].autores->size = a->size;
+        l->livro[l->size].autores->capacity = a->capacity;*/
+    }
+
+    else {
+        inserir_livros(l, t, a, ano, ed, edit);
+    }
+}
 
 
 
