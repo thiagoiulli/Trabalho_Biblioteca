@@ -122,6 +122,12 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
 
 void excluir_usuario(Usuarios *u, int id) {
     int j = buscar_usuarios(u, id);
+    
+    if (j == -1) {
+        printf("Usuário não encontrado!\n");
+        return;
+    }
+
     for (int i = j; i < u->size-1; i++) {
         u->usuario[i] = u->usuario[i+1];
     }
@@ -182,12 +188,19 @@ void inserir_autores(Autores *a, char *nm, char *inst) {
 
 void excluir_autores(Autores *a, char *nm) {
     int j = buscar_autores(a, nm);
-        for (int i = j; i < a->size-1; i++) {
-            a->autor[i] = a->autor[i+1];
-        }
-        a->size--;
-        a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size));
-        a->capacity = a->size;
+    
+    if (j == -1) {
+        printf("Autor não encontrado!\n");
+        return;
+    }
+    
+    for (int i = j; i < a->size-1; i++) {
+        a->autor[i] = a->autor[i+1];
+    }
+    
+    a->size--;
+    a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size));
+    a->capacity = a->size;
     }
     
 void inic_livros(Livros *l) {
@@ -268,6 +281,12 @@ void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit)
 
 void excluir_livros(Livros *l, int id) {
     int j = buscar_livros(l, id);
+    
+    if (j == -1) {
+        printf("Livro não encontrado!\n");
+        return;
+    }
+
     for (int i = j; i < l->size-1; i++) {
         l->livro[i] = l->livro[i+1];
     }
