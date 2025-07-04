@@ -6,7 +6,7 @@
 struct Autor{
     char *nome;
     char *instituicao;
-}Autor;
+};
 
 typedef struct { //vetor dinamico de Autor
     struct Autor *autor;
@@ -34,7 +34,7 @@ struct Usuario {
     char *nome;
     char *endereco; //endereco completo
     int telefone;
-} Usuario;
+};
 
 typedef struct {
     struct Usuario *usuario;
@@ -42,12 +42,18 @@ typedef struct {
     size_t capacity;
 } Usuarios; //vetor dinamico de usuario
 
-typedef struct {
+struct Reserva{
     struct tm data_inicial;
     struct tm data_final;
     int identificador_livro;
     int identificador_usuario;
-} Reserva;
+};
+
+typedef struct {
+    struct Reserva *reserva;
+    size_t size;
+    size_t capacity;
+} Reservas;
 
 int rand_int() {
     return (rand() % 100000);//gera um numero aleatorio para fazer o ID da pessoa
@@ -73,12 +79,6 @@ int listar_usuarios(Usuarios *u, int id) {
     }
     for (int i = 0; i < u->size; i++) {
         if (u->usuario[i].identificador == id) {
-            // printf("Usuario %d:\n", i+1);
-            // printf("Identificador: %i\n", u->usuario[i].identificador);
-            // printf("Nome: %s\n", u->usuario[i].nome);
-            // printf("Endereco: %s\n", u->usuario[i].endereco);
-            // printf("Telefone: %d\n", u->usuario[i].telefone);
-            // printf("\n");
             return i;
         }
     }
@@ -89,7 +89,7 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
     int id = rand_int();
     if (listar_usuarios(u, id) == -1) { //verificar se ha usuario com ID selecionado
         if (u->capacity == u->size) { //verificar se ha memoria ja alocada, caso nao haja, alocar
-            u->usuario = realloc(u->usuario, sizeof(Usuario) * (u->size + 1));
+            u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size + 1));
             u->capacity = u->size + 1;
         }
         u->usuario[u->size].identificador = id;
@@ -111,7 +111,7 @@ void excluir_usuario(Usuarios *u, int id) {
         u->usuario[i] = u->usuario[i+1];
     }
     u->size--;
-    u->usuario = realloc(u->usuario, sizeof(Usuario) * (u->size));
+    u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size));
     u->capacity = u->size;
 }
 
@@ -121,23 +121,52 @@ void inic_autores(Autores *a){
     a->size = 0;
 }
 
-int listar_autores(Autores *a){ //apenas lista todos os autores
-    for (int i = 0; i < a->size; i++){
-        printf("Autor %d: %s\n", i, a->autor[i].nome);
-        printf("Instituição: %s\n", a->autor[i].instituicao);
+int listar_autores(Autores *a, char *nm){
+    if (strcmp(nm, "0") == 0) {
+        for (int i = 0; i < a->size; i++){
+            printf("Autor %d: %s\n", i, a->autor[i].nome);
+            printf("Instituição: %s\n", a->autor[i].instituicao);
+        }
+        return 0;
     }
+    for (int i = 0; i < a->size; i++) {
+        if (strcmp(a->autor[i].nome, nm) == 0) {
+            printf("Autor %d: %s\n", i, a->autor[i].nome);
+            printf("Instituição: %s\n", a->autor[i].instituicao);
+            return i;
+        }
+    }
+    return -1;
 }
 
 void inserir_autores(Autores *a, char *nm, char *inst) {
-    if (a->capacity == a->size) {
-        a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size + 1));
-        a->capacity = a->size + 1;
+    if (listar_autores(a, nm) == -1) {
+        if (a->capacity == a->size) {
+            a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size + 1));
+            a->capacity = a->size + 1;
+        }
+        a->autor[a->size].nome = malloc(strlen(nm) + 1);
+        strcpy(a->autor[a->size].nome, nm);
+        a->autor[a->size].instituicao = malloc(strlen(inst) + 1);
+        strcpy(a->autor[a->size].instituicao, inst);
+        a->size++;
     }
-    a->autor[a->size].nome = malloc(strlen(nm) + 1);
-    strcpy(a->autor[a->size].nome, nm);
-    a->autor[a->size].instituicao = malloc(strlen(inst) + 1);
-    strcpy(a->autor[a->size].instituicao, inst);
-    a->size++;
+    else {
+        printf("Erro: Autor ja existe!\n");
+    }
+}
+
+void excluir_autores(Autores *a, char *nm) {
+    for (int i = 0; i < a->size; i++) {
+        if (strcmp(a->autor[i].nome, nm) == 0) {
+            for (int j = i; j < a->size-1; j++) {
+                a->autor[j] = a->autor[j+1];
+            }
+            a->size--;
+            a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size));
+            a->capacity = a->size;
+        }
+    }
 }
 
 void inic_livros(Livros *l) {
@@ -152,7 +181,7 @@ int listar_livros(Livros *l, int id){
             printf("Livro %i:\n", (i+1));
             printf("Identificador: %d\n", l->livro[i].identificador);
             printf("Titulo: %s\n", l->livro[i].titulo);
-            listar_autores(l->livro[i].autores);
+            listar_autores(l->livro[i].autores, "0");
             printf("Ano: %d\n", l->livro[i].ano);
             printf("Edição: %d\n", l->livro[i].edicao);
             printf("Editora: %s\n", l->livro[i].editora);
@@ -161,13 +190,6 @@ int listar_livros(Livros *l, int id){
     }
     for (int i = 0; i < l->size; i++) {
         if (l->livro[i].identificador == id) {
-            //printf("Livro %i:\n", (i+1));
-            //printf("Identificador: %d\n", id);
-            //printf("Titulo: %s", l->livro[i].titulo);
-            //printf("Autores")
-            //printf("Ano: %d", l->livro[i].ano);
-            //printf("Edição: %d", l->livro[i].edicao);
-            //printf("Editora: %s", l->livro[i].editora);
             return i;
         }
     }
@@ -217,8 +239,32 @@ void excluir_livros(Livros *l, int id) {
     l->capacity = l->size;
 }
 
+void inic_reserva(Reservas *r) {
+    r->reserva = NULL;
+    r->capacity = 0;
+    r->size = 0;
+}
+
+void menu() {
+    printf("Digite 1 para acessar Usuarios\n");
+    printf("Digite 2 para acessar Livros\n");
+    printf("Digite 3 para reservas\n");
+    printf("Digite 4 para relatorios\n");
+    printf("Digite 5 para sair\n");
+    printf("Digite 6 para repetir o menu\n");
+}
+
 int main(void) {
     srand(time(NULL));
+    printf("Bem vindo a Biblioteca Hawkings\n");
+    menu();
+    int n = 0, t;
+    while (n == 0) {
+        scanf("%d", &t);
+        getchar();
+        //fazer switch
+        break;
+    }
     // Usuarios usuarios;
     //inic_usuarios(&usuarios);
     //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
