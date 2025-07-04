@@ -79,6 +79,21 @@ int listar_usuarios(Usuarios *u, int id) {
     }
     for (int i = 0; i < u->size; i++) {
         if (u->usuario[i].identificador == id) {
+            printf("Usuario %d:\n", i+1);
+            printf("Identificador: %i\n", u->usuario[i].identificador);
+            printf("Nome: %s\n", u->usuario[i].nome);
+            printf("Endereco: %s\n", u->usuario[i].endereco);
+            printf("Telefone: %d\n", u->usuario[i].telefone);
+            printf("\n");
+            return i;
+        }
+    }
+    return -1; 
+}
+
+int buscar_usuarios (Usuarios *u, int id){
+    for (int i = 0; i < u->size; i++) {
+        if (u->usuario[i].identificador == id) {
             return i;
         }
     }
@@ -87,7 +102,7 @@ int listar_usuarios(Usuarios *u, int id) {
 
 void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
     int id = rand_int();
-    if (listar_usuarios(u, id) == -1) { //verificar se ha usuario com ID selecionado
+    if (buscar_usuarios(u, id) == -1) { //verificar se ha usuario com ID selecionado
         if (u->capacity == u->size) { //verificar se ha memoria ja alocada, caso nao haja, alocar
             u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size + 1));
             u->capacity = u->size + 1;
@@ -106,7 +121,7 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
 }
 
 void excluir_usuario(Usuarios *u, int id) {
-    int j = listar_usuarios(u, id);
+    int j = buscar_usuarios(u, id);
     for (int i = j; i < u->size-1; i++) {
         u->usuario[i] = u->usuario[i+1];
     }
@@ -139,8 +154,17 @@ int listar_autores(Autores *a, char *nm){
     return -1;
 }
 
+int buscar_autores (Autores *a, char *nm){
+    for (int i = 0; i < a->size; i++) {
+        if (strcmp(a->autor[i].nome, nm) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void inserir_autores(Autores *a, char *nm, char *inst) {
-    if (listar_autores(a, nm) == -1) {
+    if (buscar_autores(a, nm) == -1) {
         if (a->capacity == a->size) {
             a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size + 1));
             a->capacity = a->size + 1;
@@ -157,18 +181,15 @@ void inserir_autores(Autores *a, char *nm, char *inst) {
 }
 
 void excluir_autores(Autores *a, char *nm) {
-    for (int i = 0; i < a->size; i++) {
-        if (strcmp(a->autor[i].nome, nm) == 0) {
-            for (int j = i; j < a->size-1; j++) {
-                a->autor[j] = a->autor[j+1];
-            }
-            a->size--;
-            a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size));
-            a->capacity = a->size;
+    int j = buscar_autores(a, nm);
+        for (int i = j; i < a->size-1; i++) {
+            a->autor[i] = a->autor[i+1];
         }
+        a->size--;
+        a->autor = realloc(a->autor, sizeof(struct Autor) * (a->size));
+        a->capacity = a->size;
     }
-}
-
+    
 void inic_livros(Livros *l) {
     l->livro = NULL;
     l->capacity = 0;
@@ -190,6 +211,22 @@ int listar_livros(Livros *l, int id){
     }
     for (int i = 0; i < l->size; i++) {
         if (l->livro[i].identificador == id) {
+            printf("Livro %i:\n", (i+1));
+            printf("Identificador: %d\n", l->livro[i].identificador);
+            printf("Titulo: %s\n", l->livro[i].titulo);
+            listar_autores(l->livro[i].autores, "0");
+            printf("Ano: %d\n", l->livro[i].ano);
+            printf("Edição: %d\n", l->livro[i].edicao);
+            printf("Editora: %s\n", l->livro[i].editora);
+            return i;
+        }
+    }
+    return -1;
+}
+
+int buscar_livros (Livros *l, int id){
+    for (int i = 0; i < l->size; i++) {
+        if (l->livro[i].identificador == id) {
             return i;
         }
     }
@@ -198,7 +235,7 @@ int listar_livros(Livros *l, int id){
 
 void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit){
     int id = rand_int();
-    if (listar_livros(l,id) == -1){
+    if (buscar_livros(l,id) == -1){
         if (l->size >= l->capacity){
             l->livro = realloc(l->livro, sizeof(struct Livro) * (l->size + 1));
             l->capacity = l->size + 1;
@@ -211,12 +248,12 @@ void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit)
         l->livro[l->size].editora = malloc(strlen(edit) + 1);
         strcpy(l->livro[l->size].editora, edit);
         l->livro[l->size].autores = malloc(sizeof(Autores));
-        // l->livro[l->size].autores->size = 0;
+        //l->livro[l->size].autores->size = 0;
         l->livro[l->size].autores->size = a->size;
         l->livro[l->size].autores->capacity = a->size;
         l->livro[l->size].autores->autor = malloc(sizeof(struct Autor) * a->size);
         for (int i = 0; i < l->livro[l->size].autores->size; i++) {
-            // inserir_autores(l->livro[l->size].autores, a->autor[i].nome, a->autor[i].instituicao);
+            //inserir_autores(l->livro[l->size].autores, a->autor[i].nome, a->autor[i].instituicao);
             l->livro[l->size].autores->autor[i].nome = malloc(strlen(a->autor[i].nome) + 1);
             strcpy(l->livro[l->size].autores->autor[i].nome, a->autor[i].nome);
             l->livro[l->size].autores->autor[i].instituicao = malloc(strlen(a->autor[i].instituicao) + 1);
@@ -230,7 +267,7 @@ void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit)
 }
 
 void excluir_livros(Livros *l, int id) {
-    int j = listar_livros(l, id);
+    int j = buscar_livros(l, id);
     for (int i = j; i < l->size-1; i++) {
         l->livro[i] = l->livro[i+1];
     }
@@ -252,19 +289,179 @@ void menu() {
     printf("Digite 4 para relatorios\n");
     printf("Digite 5 para sair\n");
     printf("Digite 6 para repetir o menu\n");
+
+    
 }
 
-int main(void) {
-    srand(time(NULL));
-    printf("Bem vindo a Biblioteca Hawkings\n");
+void switch_menu(){
+    printf("\n");
     menu();
     int n = 0, t;
     while (n == 0) {
         scanf("%d", &t);
         getchar();
-        //fazer switch
+        switch (t){
+        
+        case 1:
+            menu_usuarios();
+            break;
+        
+        case 2:
+            menu_livros();
+            break;
+
+        case 3:
+            menu_reservas();
+            break;
+        
+        case 4:
+            menu_relatorios();
+            break;
+        
+        case 5:
+            n = 1;  
+            break;
+        
+        default:
+            break;
+        }
         break;
     }
+}
+
+void menu_usuarios(){
+    printf("Digite 1 para adicionar usuarios\n");
+    printf("Digite 2 para procurar usuarios\n");
+    printf("Digite 3 para listar todos usuarios\n");
+    printf("Digite 4 para excluir usuarios\n");
+    printf("Digite 5 para alterar usuarios\n");
+    printf("Digite 6 para voltar\n");
+
+    int n = 0, t;
+    while (n == 0) {
+        scanf("%d", &t);
+        getchar();
+        switch (t){
+        
+        case 1:
+            //inserir_usuario();
+            break;
+        
+        case 2:
+            //listar_usuarios();
+            break;
+
+        case 3:
+            //listar_usuarios();
+            break;
+        
+        case 4:
+            //excluir_usuario();
+            break;
+        
+        case 5:
+            //alterar 
+            break;
+        
+        case 6:
+            switch_menu();
+            return; 
+        
+        default:
+            printf("Numero invaldo, tente novamente\n");
+            break;
+        }
+        break;
+    }
+}
+
+void menu_livros(){
+    printf("Digite 1 para adicionar livros\n");
+    printf("Digite 2 para procurar livros\n");
+    printf("Digite 3 para listar todos livros\n");
+    printf("Digite 4 para excluir livros\n");
+    printf("Digite 5 para alterar livros\n");
+    printf("Digite 6 para voltar\n");
+
+    int n = 0, t;
+    while (n == 0) {
+        scanf("%d", &t);
+        getchar();
+        switch (t){
+        
+        case 1:
+            //inserir_livros();
+            break;
+        
+        case 2:
+            //listar_livros();
+            break;
+
+        case 3:
+            //listar_livros();
+            break;
+        
+        case 4:
+            //excluir_livros();
+            break;
+        
+        case 5:
+            //alterar 
+            break;
+        
+        case 6:
+            switch_menu();
+            return; 
+        
+        default:
+            printf("Numero invaldo, tente novamente\n");
+            break;
+        }
+        break;
+    }
+}
+
+void menu_relatorios(){
+    printf("Digite 1 para listar todos os livros\n");
+    printf("Digite 2 para listar todos os usuarios\n");
+    printf("Digite 3 para listar todos os usuarios com reservas\n");
+    printf("Digite 4 para voltar\n");
+
+    int n = 0, t;
+    while (n == 0) {
+        scanf("%d", &t);
+        getchar();
+        switch (t){
+        
+        case 1:
+            //listar_livros();
+            break;
+        
+        case 2:
+            //listar_usuarios();
+            break;
+
+        case 3:
+            //listar_reservas();
+            break;
+        
+        case 4:
+            switch_menu();
+            return; 
+        
+        default:
+            printf("Numero invaldo, tente novamente\n");
+            break;
+        }
+        break;
+    }
+}
+
+int main(void) {
+    srand(time(NULL));
+    printf("Bem vindo a Biblioteca Hawkings\n");
+    switch_menu();
+    
     // Usuarios usuarios;
     //inic_usuarios(&usuarios);
     //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
@@ -279,5 +476,9 @@ int main(void) {
     inserir_livros(&l, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
     inserir_livros(&l, "eu e vc", &a, 2023, 4, "hebert-richards");
     listar_livros(&l, -1);
+    
+
+
+
     return 0;
 }
