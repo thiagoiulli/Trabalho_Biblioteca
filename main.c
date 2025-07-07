@@ -65,7 +65,7 @@ void inic_usuarios(Usuarios *u) {
     u->size = 0;
 }
 
-int listar_usuarios(Usuarios *u, int id) {
+void listar_usuarios(Usuarios *u, int id) {
     if (id == -1) { //se o identificador for passado como -1, a função lista todos os usuarios cadastrados
         for (int i = 0; i < u->size; i++) {
             printf("Usuario %d:\n", i+1);
@@ -75,20 +75,20 @@ int listar_usuarios(Usuarios *u, int id) {
             printf("Telefone: %d\n", u->usuario[i].telefone);
             printf("\n");
         }
-        return 0;
+        return;
     }
+
     for (int i = 0; i < u->size; i++) {
         if (u->usuario[i].identificador == id) {
-            printf("Usuario %d:\n", i+1);
             printf("Identificador: %i\n", u->usuario[i].identificador);
             printf("Nome: %s\n", u->usuario[i].nome);
             printf("Endereco: %s\n", u->usuario[i].endereco);
             printf("Telefone: %d\n", u->usuario[i].telefone);
             printf("\n");
-            return i;
+            return;
         }
     }
-    return -1; 
+    printf("Usuario %d: não encontrado\n", id);
 }
 
 int buscar_usuarios (Usuarios *u, int id){
@@ -117,6 +117,27 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
     }
     else {
         inserir_usuario(u, nm, end, tel); //função recursiva que repete o id, caso ele seja gerado repetido
+    }
+}
+
+void alterar_usuario(Usuarios *u, int id, char *nm, char *end, int tel) {
+    int i = buscar_usuarios(u, id);
+    if (i == -1) {
+        printf("Sem usuario com id informado!\n");
+        return;
+    }
+    if (strcmp(nm, "") != 0) {
+        free(u->usuario[i].nome);
+        u->usuario[i].nome = malloc(strlen(nm) + 1);
+        strcpy(u->usuario[i].nome, nm);
+    }
+    if (strcmp(end, "") != 0) {
+        free(u->usuario[i].endereco);
+        u->usuario[i].endereco = malloc(strlen(end) + 1);
+        strcpy(u->usuario[i].endereco, end);
+    }
+    if (tel != -1) {
+        u->usuario[i].telefone = tel;
     }
 }
 
@@ -224,7 +245,6 @@ int listar_livros(Livros *l, int id){
     }
     for (int i = 0; i < l->size; i++) {
         if (l->livro[i].identificador == id) {
-            printf("Livro %i:\n", (i+1));
             printf("Identificador: %d\n", l->livro[i].identificador);
             printf("Titulo: %s\n", l->livro[i].titulo);
             listar_autores(l->livro[i].autores, "0");
@@ -301,203 +321,246 @@ void inic_reserva(Reservas *r) {
     r->size = 0;
 }
 
-void menu() {
-    printf("Digite 1 para acessar Usuarios\n");
-    printf("Digite 2 para acessar Livros\n");
-    printf("Digite 3 para reservas\n");
-    printf("Digite 4 para relatorios\n");
-    printf("Digite 5 para sair\n");
-    printf("Digite 6 para repetir o menu\n");
-
-    
-}
-
-void switch_menu(){
-    printf("\n");
-    menu();
+void menu_usuarios(Usuarios *u){
     int n = 0, t;
     while (n == 0) {
+        printf("Digite 1 para adicionar usuarios\n");
+        printf("Digite 2 para procurar usuarios\n");
+        printf("Digite 3 para listar todos usuarios\n");
+        printf("Digite 4 para excluir usuarios\n");
+        printf("Digite 5 para alterar usuarios\n");
+        printf("Digite 6 para voltar\n");
         scanf("%d", &t);
         getchar();
         switch (t){
-        
-        case 1:
-            menu_usuarios();
-            break;
-        
-        case 2:
-            menu_livros();
-            break;
-
-        case 3:
-            menu_reservas();
-            break;
-        
-        case 4:
-            menu_relatorios();
-            break;
-        
-        case 5:
-            n = 1;  
-            break;
-        
-        default:
-            break;
+            case 1:
+                char *nm, *end;
+                int tel, read;
+                size_t size = 0;
+                printf("Insira o nome do usuário:\n");
+                read = getline(&nm, &size, stdin);
+                if (read != -1) {
+                    if (nm[read - 1] == '\n') {
+                        nm[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nm);
+                    free(end);
+                    return;
+                }
+                size = 0;
+                printf("Insira o endereço do usuário:\n");
+                read = getline(&end, &size, stdin);
+                if (read != -1) {
+                    if (end[read - 1] == '\n') {
+                        end[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nm);
+                    free(end);
+                    return;
+                }
+                printf("Insira o telefone do usuário:\n");
+                scanf("%d", &tel);
+                getchar();
+                inserir_usuario(u, nm, end, tel);
+                printf("%s\n%s\n%d\n", nm, end, tel);
+                free(nm);
+                free(end);
+                break;
+            case 2:
+                int id;
+                printf("insira o id do usuario:\n");
+                scanf("%d", &id);
+                getchar();
+                listar_usuarios(u, id);
+                break;
+            case 3:
+                listar_usuarios(u, -1);
+                break;
+            case 4:
+                int idd;
+                printf("insira o id do usuario para ser excluido:\n");
+                scanf("%d", &idd);
+                getchar();
+                excluir_usuario(u, idd);
+                break;
+            case 5:
+                int iddd;
+                char *nome, *endereco, *telefone;
+                int nread, tell;
+                size_t len = 0;
+                printf("digite o id do usuário a ser alterado:\n");
+                scanf("%d", &iddd);
+                getchar();
+                printf("Digite o nome alterado (enter para não alterar):\n");
+                nread = getline(&nome, &len, stdin);
+                if (nread != -1) {
+                    if (nome[nread - 1] == '\n') {
+                        nome[nread - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nome);
+                    free(endereco);
+                    return;
+                }
+                len = 0;
+                printf("Digite o endereço alterado (enter para não alterar):\n");
+                nread = getline(&endereco, &len, stdin);
+                if (nread != -1) {
+                    if (endereco[nread - 1] == '\n') {
+                        endereco[nread - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nome);
+                    free(endereco);
+                    return;
+                }
+                len = 0;
+                printf("Digite o telefone alterado (enter para não alterar):\n");
+                nread = getline(&telefone, &len, stdin);
+                if (nread != -1) {
+                    if (telefone[nread - 1] == '\n') {
+                        telefone[nread - 1] = '\0';
+                    }
+                    if (sscanf(telefone, "%d", &tell) != 1) {
+                        tell = -1;
+                    }
+                }
+                alterar_usuario(u, iddd, nome, endereco, tell);
+                free(nome);
+                free(endereco);
+                break;
+            case 6:
+                return;
+            default:
+                printf("Numero invaldo, tente novamente\n");
+                break;
         }
-        break;
-    }
-}
-
-void menu_usuarios(){
-    printf("Digite 1 para adicionar usuarios\n");
-    printf("Digite 2 para procurar usuarios\n");
-    printf("Digite 3 para listar todos usuarios\n");
-    printf("Digite 4 para excluir usuarios\n");
-    printf("Digite 5 para alterar usuarios\n");
-    printf("Digite 6 para voltar\n");
-
-    int n = 0, t;
-    while (n == 0) {
-        scanf("%d", &t);
-        getchar();
-        switch (t){
-        
-        case 1:
-            //inserir_usuario();
-            break;
-        
-        case 2:
-            //listar_usuarios();
-            break;
-
-        case 3:
-            //listar_usuarios();
-            break;
-        
-        case 4:
-            //excluir_usuario();
-            break;
-        
-        case 5:
-            //alterar 
-            break;
-        
-        case 6:
-            switch_menu();
-            return; 
-        
-        default:
-            printf("Numero invaldo, tente novamente\n");
-            break;
-        }
-        break;
     }
 }
 
 void menu_livros(){
-    printf("Digite 1 para adicionar livros\n");
-    printf("Digite 2 para procurar livros\n");
-    printf("Digite 3 para listar todos livros\n");
-    printf("Digite 4 para excluir livros\n");
-    printf("Digite 5 para alterar livros\n");
-    printf("Digite 6 para voltar\n");
-
     int n = 0, t;
     while (n == 0) {
+        printf("Digite 1 para adicionar livros\n");
+        printf("Digite 2 para procurar livros\n");
+        printf("Digite 3 para listar todos livros\n");
+        printf("Digite 4 para excluir livros\n");
+        printf("Digite 5 para alterar livros\n");
+        printf("Digite 6 para voltar\n");
         scanf("%d", &t);
         getchar();
         switch (t){
-        
-        case 1:
-            //inserir_livros();
-            break;
-        
-        case 2:
-            //listar_livros();
-            break;
-
-        case 3:
-            //listar_livros();
-            break;
-        
-        case 4:
-            //excluir_livros();
-            break;
-        
-        case 5:
-            //alterar 
-            break;
-        
-        case 6:
-            switch_menu();
-            return; 
-        
-        default:
-            printf("Numero invaldo, tente novamente\n");
-            break;
+            case 1:
+                //inserir_livros();
+                break;
+            case 2:
+                //listar_livros();
+                break;
+            case 3:
+                //listar_livros();
+                break;
+            case 4:
+                //excluir_livros();
+                break;
+            case 5:
+                //alterar
+                break;
+            case 6:
+                return;
+            default:
+                printf("Numero invaldo, tente novamente\n");
+                break;
         }
-        break;
     }
 }
 
 void menu_relatorios(){
-    printf("Digite 1 para listar todos os livros\n");
-    printf("Digite 2 para listar todos os usuarios\n");
-    printf("Digite 3 para listar todos os usuarios com reservas\n");
-    printf("Digite 4 para voltar\n");
-
     int n = 0, t;
     while (n == 0) {
+        printf("Digite 1 para listar todos os livros\n");
+        printf("Digite 2 para listar todos os usuarios\n");
+        printf("Digite 3 para listar todos os usuarios com reservas\n");
+        printf("Digite 4 para voltar\n");
         scanf("%d", &t);
         getchar();
         switch (t){
-        
-        case 1:
-            //listar_livros();
-            break;
-        
-        case 2:
-            //listar_usuarios();
-            break;
+            case 1:
+                //listar_livros();
+                break;
+            case 2:
+                //listar_usuarios();
+                break;
+            case 3:
+                //listar_reservas();
+                break;
+            case 4:
+                return;
+            default:
+                printf("Numero invaldo, tente novamente\n");
+                break;
+        }
+    }
+}
 
-        case 3:
-            //listar_reservas();
+void switch_menu(Usuarios *u){
+    int n = 0, t;
+    while (n == 0) {
+        printf("Digite 1 para acessar Usuarios\n");
+        printf("Digite 2 para acessar Livros\n");
+        printf("Digite 3 para reservas\n");
+        printf("Digite 4 para relatorios\n");
+        printf("Digite 5 para sair\n");
+        scanf("%d", &t);
+        getchar();
+        switch (t){
+        case 1:
+            menu_usuarios(u);
             break;
-        
+        case 2:
+            menu_livros();
+            break;
+        case 3:
+            // menu_reservas();
+            break;
         case 4:
-            switch_menu();
-            return; 
-        
+            menu_relatorios();
+            break;
+        case 5:
+            return;
         default:
-            printf("Numero invaldo, tente novamente\n");
+            printf("numero invaldo, tente novamente\n");
             break;
         }
-        break;
     }
 }
 
 int main(void) {
     srand(time(NULL));
+    Usuarios usuarios;
+    inic_usuarios(&usuarios);
     printf("Bem vindo a Biblioteca Hawkings\n");
-    switch_menu();
-    
-    // Usuarios usuarios;
-    //inic_usuarios(&usuarios);
+    switch_menu(&usuarios);
     //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
     //inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
     // listar_usuarios(&usuarios, -1);
-    Autores a;
-    inic_autores(&a);
-    inserir_autores(&a, "enzo enzo enzo", "ceferno");
-    inserir_autores(&a, "enzo enzo", "ceferno");
-    Livros l;
-    inic_livros(&l);
-    inserir_livros(&l, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
-    inserir_livros(&l, "eu e vc", &a, 2023, 4, "hebert-richards");
-    listar_livros(&l, -1);
-    
-
-
-
+    // Autores a;
+    // inic_autores(&a);
+    // inserir_autores(&a, "enzo enzo enzo", "ceferno");
+    // inserir_autores(&a, "enzo enzo", "ceferno");
+    // Livros l;
+    // inic_livros(&l);
+    // inserir_livros(&l, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
+    // inserir_livros(&l, "eu e vc", &a, 2023, 4, "hebert-richards");
+    // listar_livros(&l, -1);
     return 0;
 }
