@@ -14,7 +14,7 @@ typedef struct { //vetor dinamico de Autor
     size_t capacity; //capacity = qnts pessoas cabem no vetor
 } Autores;
 
-struct Livro{
+struct Livro{ //struct dos livros
     int identificador;
     char *titulo;
     Autores *autores;
@@ -29,7 +29,7 @@ typedef struct {
     size_t capacity;
 } Livros; //vetor dinamico de livro
 
-struct Usuario {
+struct Usuario { //struct dos usuarios
     int identificador;
     char *nome;
     char *endereco; //endereco completo
@@ -42,24 +42,24 @@ typedef struct {
     size_t capacity;
 } Usuarios; //vetor dinamico de usuario
 
-struct Reserva{
+struct Reserva{ //struct das reservas
     struct tm data_inicial;
     struct tm data_final;
-    int identificador_livro;
     int identificador_usuario;
+    int identificador_livro;
 };
 
 typedef struct {
     struct Reserva *reserva;
     size_t size;
     size_t capacity;
-} Reservas;
+} Reservas; //vetor dinamico da reserva
 
 int rand_int() {
     return (rand() % 100000);//gera um numero aleatorio para fazer o ID da pessoa
 }
 
-void inic_usuarios(Usuarios *u) {
+void inic_usuarios(Usuarios *u) { //inicializa o vetor dinamico de usuarios, evitando Segmentation fault
     u->usuario = NULL;
     u->capacity = 0;
     u->size = 0;
@@ -77,7 +77,7 @@ void listar_usuarios(Usuarios *u, int id) {
         }
         return;
     }
-    for (int i = 0; i < u->size; i++) {
+    for (int i = 0; i < u->size; i++) { //se o id não for -1, ele procura entre todos os usuarios, para verificar se ele ex
         if (u->usuario[i].identificador == id) {
             printf("Identificador: %i\n", u->usuario[i].identificador);
             printf("Nome: %s\n", u->usuario[i].nome);
@@ -90,7 +90,7 @@ void listar_usuarios(Usuarios *u, int id) {
     printf("Usuario %d: não encontrado\n", id);
 }
 
-int buscar_usuarios (Usuarios *u, int id){
+int buscar_usuarios (Usuarios *u, int id){ //função que busca um usuario especifico
     for (int i = 0; i < u->size; i++) {
         if (u->usuario[i].identificador == id) {
             return i;
@@ -106,13 +106,13 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
             u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size + 1));
             u->capacity = u->size + 1;
         }
-        u->usuario[u->size].identificador = id;
-        u->usuario[u->size].nome = malloc(strlen(nm) + 1);
-        strcpy(u->usuario[u->size].nome, nm);
-        u->usuario[u->size].endereco = malloc(strlen(end) + 1);
-        strcpy(u->usuario[u->size].endereco, end);
-        u->usuario[u->size].telefone = tel;
-        u->size++;
+        u->usuario[u->size].identificador = id; //copia o numero aleatorio para o id do usuario criado
+        u->usuario[u->size].nome = malloc(strlen(nm) + 1);//aloca a memoria
+        strcpy(u->usuario[u->size].nome, nm);//copia string de nome para o usuario criado
+        u->usuario[u->size].endereco = malloc(strlen(end) + 1);//aloca memoria
+        strcpy(u->usuario[u->size].endereco, end);//copia string de endereço para o usuario criado
+        u->usuario[u->size].telefone = tel;//copia o telefone para o usuario criado
+        u->size++;//aumenta o tamanho do vetor, liberando espaço para mais um usuario
         printf("Usuario criado com id: %d\n", id);
     }
     else {
@@ -123,21 +123,21 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
 void alterar_usuario(Usuarios *u, int id, char *nm, char *end, int tel) {
     int i = buscar_usuarios(u, id);
     if (i == -1) {
-        printf("Sem usuario com id informado!\n");
+        printf("Sem usuario com id informado!\n");//verifica se usuario existe antes de alterar
         return;
     }
     if (strcmp(nm, "") != 0) {
-        free(u->usuario[i].nome);
-        u->usuario[i].nome = malloc(strlen(nm) + 1);
-        strcpy(u->usuario[i].nome, nm);
+        free(u->usuario[i].nome);//apaga o conteudo escrito anteriormente
+        u->usuario[i].nome = malloc(strlen(nm) + 1);//aloca memoria novamente
+        strcpy(u->usuario[i].nome, nm);//copia a string de nome para o usuario
     }
     if (strcmp(end, "") != 0) {
-        free(u->usuario[i].endereco);
-        u->usuario[i].endereco = malloc(strlen(end) + 1);
-        strcpy(u->usuario[i].endereco, end);
+        free(u->usuario[i].endereco);//apaga o conteudo anterior
+        u->usuario[i].endereco = malloc(strlen(end) + 1);//aloca memoria novamente
+        strcpy(u->usuario[i].endereco, end);//copia a string de endereço para o usuario
     }
     if (tel != -1) {
-        u->usuario[i].telefone = tel;
+        u->usuario[i].telefone = tel;//copia o novo telefone para o usuario
     }
 }
 
@@ -145,15 +145,15 @@ void excluir_usuario(Usuarios *u, int id) {
     int j = buscar_usuarios(u, id);
     
     if (j == -1) {
-        printf("Usuário não encontrado!\n");
+        printf("Usuário não encontrado!\n");//verifica se usuario existe antes de excluir
         return;
     }
 
     for (int i = j; i < u->size-1; i++) {
         u->usuario[i] = u->usuario[i+1];
     }
-    u->size--;
-    u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size));
+    u->size--;//reduz o parametro do tamanho do vetor
+    u->usuario = realloc(u->usuario, sizeof(struct Usuario) * (u->size));//realoca o tamanho do vetor
     u->capacity = u->size;
 }
 
@@ -348,6 +348,42 @@ void inic_reserva(Reservas *r) {
     r->reserva = NULL;
     r->capacity = 0;
     r->size = 0;
+}
+
+void listar_reservas(Reservas *r, int id) {
+    if (id == -1) {
+        for (int i = 0; i < r->size; i++) {
+            printf("Data inicial da reserva: %d/%d/%d\n", r->reserva[i].data_inicial.tm_mday, r->reserva[i].data_inicial.tm_mon+1, r->reserva[i].data_inicial.tm_year);
+            printf("Data final da reserva: %d/%d/%d\n", r->reserva[i].data_final.tm_mday, r->reserva[i].data_final.tm_mon+1, r->reserva[i].data_final.tm_year);
+            printf("Id usuario: %d\n", r->reserva[i].identificador_usuario);
+            printf("Id livro: %d\n", r->reserva[i].identificador_livro);
+            printf("\n");
+        }
+        return;
+    }
+    for (int i = 0; i < r->size; i++) {
+        if (r->reserva[i].identificador_usuario == id || r->reserva[i].identificador_livro == id) {
+            printf("Data inicial da reserva: %d/%d/%d\n", r->reserva[i].data_inicial.tm_mday, r->reserva[i].data_inicial.tm_mon+1, r->reserva[i].data_inicial.tm_year);
+            printf("Data final da reserva: %d/%d/%d\n", r->reserva[i].data_final.tm_mday, r->reserva[i].data_final.tm_mon+1, r->reserva[i].data_final.tm_year);
+            printf("Id usuario: %d\n", r->reserva[i].identificador_usuario);
+            printf("Id livro: %d\n", r->reserva[i].identificador_livro);
+            printf("\n");
+            return;
+        }
+    }
+    printf("Id %d: não encontrado\n", id);
+}
+
+void inserir_reserva(Reservas *r, struct tm di, struct tm df, int idu, int idl) {
+    if (r->capacity == r->size) {
+        r->reserva = realloc(r->reserva, sizeof(struct Reserva) * (r->size + 1));
+        r->capacity = r->size + 1;
+    }
+    r->reserva[r->size].data_inicial = di;
+    r->reserva[r->size].data_final = df;
+    r->reserva[r->size].identificador_usuario = idu;
+    r->reserva[r->size].identificador_livro = idl;
+    r->size++;
 }
 
 void menu_usuarios(Usuarios *u){
@@ -790,7 +826,94 @@ void menu_relatorios(Livros *l, Usuarios *u){
     }
 }
 
-void switch_menu(Usuarios *u, Livros *l){
+void menu_reservas(Reservas *r) {
+    int n = 0, t;
+    while (n == 0) {
+        printf("Digite 1 para adicionar reserva\n");
+        printf("Digite 2 para procurar reserva\n");
+        printf("Digite 3 para listar todas as reservas\n");
+        printf("Digite 4 para excluir reserva\n");
+        printf("Digite 5 para alterar reserva\n");
+        printf("Digite 6 para voltar\n");
+        scanf("%d", &t);
+        getchar();
+        switch (t) {
+            case 1:
+                char *sdti1, *sdtf1;
+                int idu1, idl1, read1;
+                size_t size = 0;
+                printf("Insira o id do usuário:\n");
+                scanf("%d", &idu1);
+                getchar();
+                printf("Insira o id do livro:\n");
+                scanf("%d", &idl1);
+                getchar();
+                struct tm di1 = {0}, df1 = {0};
+                printf("Insira a data inicial da reserva(DD/MM/YYYY):\n");
+                read1 = getline(&sdti1, &size, stdin);
+                if (read1 != -1) {
+                    if (sdti1[read1 - 1] == '\n') {
+                        sdti1[read1 - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(sdti1);
+                    free(sdtf1);
+                    return;
+                }
+                if (sscanf(sdti1, "%d/%d/%d", &di1.tm_mday, &di1.tm_mon, &di1.tm_year) != 3) {
+                    printf("Erro lendo stdin!\n");
+                    free(sdti1);
+                    free(sdtf1);
+                    return;
+                }
+                di1.tm_mon--;
+                size = 0;
+                printf("Insira a data final da reserva(DD/MM/YYYY):\n");
+                read1 = getline(&sdtf1, &size, stdin);
+                if (read1 != -1) {
+                    if (sdtf1[read1 - 1] == '\n') {
+                        sdtf1[read1 - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(sdti1);
+                    free(sdtf1);
+                    return;
+                }
+                if (sscanf(sdtf1, "%d/%d/%d", &df1.tm_mday, &df1.tm_mon, &df1.tm_year) != 3) {
+                    printf("Erro lendo stdin!\n");
+                    free(sdti1);
+                    free(sdtf1);
+                    return;
+                }
+                df1.tm_mon--;
+                inserir_reserva(r, di1, df1, idu1, idl1);
+                free(sdti1);
+                free(sdtf1);
+                break;
+            case 2:
+                int id;
+                printf("insira o id do usuario ou do livro:\n");
+                scanf("%d", &id);
+                getchar();
+                listar_reservas(r, id);
+                break;
+            case 3:
+                listar_reservas(r, -1);
+                break;
+            case 6:
+                return;
+            default:
+                printf("Numero invaldo, tente novamente\n");
+                break;
+        }
+    }
+}
+
+void switch_menu(Usuarios *u, Livros *l, Reservas *r){
     int n = 0, t;
     while (n == 0) {
         printf("Digite 1 para acessar Usuarios\n");
@@ -812,7 +935,7 @@ void switch_menu(Usuarios *u, Livros *l){
             menu_autores(l);
             break;
         case 4:
-            //menu_reserva();
+            menu_reservas(r);
             break;
         case 5:
             menu_relatorios(l, u);
@@ -832,19 +955,21 @@ int main(void) {
     inic_usuarios(&usuarios);
     Livros livros;
     inic_livros(&livros);
+    Reservas reservas;
+    inic_reserva(&reservas);
     printf("Bem vindo a Biblioteca Hawkings\n");
-    switch_menu(&usuarios, &livros);
+    switch_menu(&usuarios, &livros, &reservas);
     //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
     //inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
-    // listar_usuarios(&usuarios, -1);
-    // Autores a;
-    // inic_autores(&a);
-    // inserir_autores(&a, "enzo enzo enzo", "ceferno");
-    // inserir_autores(&a, "enzo enzo", "ceferno");
-    // Livros l;
-    // inic_livros(&l);
-    // inserir_livros(&l, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
-    // inserir_livros(&l, "eu e vc", &a, 2023, 4, "hebert-richards");
-    // listar_livros(&l, -1);
+    //listar_usuarios(&usuarios, -1);
+    //Autores a;
+    //inic_autores(&a);
+    //inserir_autores(&a, "enzo enzo enzo", "ceferno");
+    //inserir_autores(&a, "enzo enzo", "ceferno");
+    //Livros l;
+    //inic_livros(&l);
+    //inserir_livros(&l, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
+    //inserir_livros(&l, "eu e vc", &a, 2023, 4, "hebert-richards");
+    //listar_livros(&l, -1);
     return 0;
 }
