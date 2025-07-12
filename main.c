@@ -77,7 +77,6 @@ void listar_usuarios(Usuarios *u, int id) {
         }
         return;
     }
-
     for (int i = 0; i < u->size; i++) {
         if (u->usuario[i].identificador == id) {
             printf("Identificador: %i\n", u->usuario[i].identificador);
@@ -114,6 +113,7 @@ void inserir_usuario(Usuarios *u, char *nm, char *end, int tel) {
         strcpy(u->usuario[u->size].endereco, end);
         u->usuario[u->size].telefone = tel;
         u->size++;
+        printf("Usuario criado com id: %d\n", id);
     }
     else {
         inserir_usuario(u, nm, end, tel); //função recursiva que repete o id, caso ele seja gerado repetido
@@ -166,15 +166,17 @@ void inic_autores(Autores *a){
 int listar_autores(Autores *a, char *nm){
     if (strcmp(nm, "0") == 0) {
         for (int i = 0; i < a->size; i++){
-            printf("Autor %d: %s\n", i, a->autor[i].nome);
+            printf("Autor %d: %s\n", i+1, a->autor[i].nome);
             printf("Instituição: %s\n", a->autor[i].instituicao);
         }
+        printf("\n");
         return 0;
     }
     for (int i = 0; i < a->size; i++) {
         if (strcmp(a->autor[i].nome, nm) == 0) {
-            printf("Autor %d: %s\n", i, a->autor[i].nome);
+            printf("Autor %d: %s\n", i+1, a->autor[i].nome);
             printf("Instituição: %s\n", a->autor[i].instituicao);
+            printf("\n");
             return i;
         }
     }
@@ -240,6 +242,7 @@ int listar_livros(Livros *l, int id){
             printf("Ano: %d\n", l->livro[i].ano);
             printf("Edição: %d\n", l->livro[i].edicao);
             printf("Editora: %s\n", l->livro[i].editora);
+            printf("\n");
         }
         return 0;
     }
@@ -251,6 +254,7 @@ int listar_livros(Livros *l, int id){
             printf("Ano: %d\n", l->livro[i].ano);
             printf("Edição: %d\n", l->livro[i].edicao);
             printf("Editora: %s\n", l->livro[i].editora);
+            printf("\n");
             return i;
         }
     }
@@ -293,9 +297,34 @@ void inserir_livros(Livros *l, char *t, Autores *a, int ano, int ed, char *edit)
             strcpy(l->livro[l->size].autores->autor[i].instituicao, a->autor[i].instituicao);
         }
         l->size++;
+        printf("Livro criado com id: %d\n", id);
     }
     else {
         inserir_livros(l, t, a, ano, ed, edit);
+    }
+}
+
+void alterar_livro(Livros *l, int id, char *t, char *edit, int ano, int ed) {
+    int i = buscar_livros(l, id);
+    if (i == -1) {
+        printf("Sem livro com id informado!\n");
+        return;
+    }
+    if (strcmp(t, "") != 0) {
+        free(l->livro[i].titulo);
+        l->livro[i].titulo = malloc(strlen(t) + 1);
+        strcpy(l->livro[i].titulo, t);
+    }
+    if (strcmp(edit, "") != 0) {
+        free(l->livro[i].editora);
+        l->livro[i].editora = malloc(strlen(edit) + 1);
+        strcpy(l->livro[i].editora, edit);
+    }
+    if (ano != -1) {
+        l->livro[i].ano = ano;
+    }
+    if (ed != -1) {
+        l->livro[i].edicao = ed;
     }
 }
 
@@ -303,7 +332,7 @@ void excluir_livros(Livros *l, int id) {
     int j = buscar_livros(l, id);
     
     if (j == -1) {
-        printf("Livro não encontrado!\n");
+        printf("Sem livro com id informado!\n");
         return;
     }
 
@@ -368,7 +397,6 @@ void menu_usuarios(Usuarios *u){
                 scanf("%d", &tel);
                 getchar();
                 inserir_usuario(u, nm, end, tel);
-                printf("%s\n%s\n%d\n", nm, end, tel);
                 free(nm);
                 free(end);
                 break;
@@ -383,20 +411,24 @@ void menu_usuarios(Usuarios *u){
                 listar_usuarios(u, -1);
                 break;
             case 4:
-                int idd;
+                int id4;
                 printf("insira o id do usuario para ser excluido:\n");
-                scanf("%d", &idd);
+                scanf("%d", &id4);
                 getchar();
-                excluir_usuario(u, idd);
+                excluir_usuario(u, id4);
                 break;
             case 5:
-                int iddd;
+                int id5;
                 char *nome, *endereco, *telefone;
                 int nread, tell;
                 size_t len = 0;
                 printf("digite o id do usuário a ser alterado:\n");
-                scanf("%d", &iddd);
+                scanf("%d", &id5);
                 getchar();
+                if (buscar_usuarios(u, id5) == -1) {
+                    printf("Usuario não encontrado!\n");
+                    break;
+                }
                 printf("Digite o nome alterado (enter para não alterar):\n");
                 nread = getline(&nome, &len, stdin);
                 if (nread != -1) {
@@ -435,7 +467,7 @@ void menu_usuarios(Usuarios *u){
                         tell = -1;
                     }
                 }
-                alterar_usuario(u, iddd, nome, endereco, tell);
+                alterar_usuario(u, id5, nome, endereco, tell);
                 free(nome);
                 free(endereco);
                 break;
@@ -448,7 +480,7 @@ void menu_usuarios(Usuarios *u){
     }
 }
 
-void menu_livros(){
+void menu_livros(Livros *l){
     int n = 0, t;
     while (n == 0) {
         printf("Digite 1 para adicionar livros\n");
@@ -461,19 +493,176 @@ void menu_livros(){
         getchar();
         switch (t){
             case 1:
-                //inserir_livros();
+                char *titulo, *editora;
+                int edicao, ano, Nautores, read;
+                size_t size = 0;
+                printf("Insira o titulo do livro:\n");
+                read = getline(&titulo, &size, stdin);
+                if (read != -1) {
+                    if (titulo[read - 1] == '\n') {
+                        titulo[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(titulo);
+                    free(editora);
+                    return;
+                }
+                size = 0;
+                printf("Insira a editora do livro:\n");
+                read = getline(&editora, &size, stdin);
+                if (read != -1) {
+                    if (editora[read - 1] == '\n') {
+                        editora[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(titulo);
+                    free(editora);
+                    return;
+                }
+                printf("Insira o ano do livro:\n");
+                scanf("%d", &ano);
+                getchar();
+                printf("Insira a edição do livro:\n");
+                scanf("%d", &edicao);
+                getchar();
+                printf("Digite quantos autores o livro tem:\n");
+                scanf("%d", &Nautores);
+                getchar();
+                Autores autores;
+                inic_autores(&autores);
+                for (int i = 0; i < Nautores; i++) {
+                    char *nm, *inst;
+                    size = 0;
+                    printf("Digite o nome do autor %d:\n", i+1);
+                    read = getline(&nm, &size, stdin);
+                    if (read != -1) {
+                        if (nm[read - 1] == '\n') {
+                            nm[read - 1] = '\0';
+                        }
+                    }
+                    else {
+                        printf("Erro lendo stdin!\n");
+                        free(nm);
+                        free(inst);
+                        free(titulo);
+                        free(editora);
+                        return;
+                    }
+                    size = 0;
+                    printf("Digite a instituição do autor %d:\n", i+1);
+                    read = getline(&inst, &size, stdin);
+                    if (read != -1) {
+                        if (inst[read - 1] == '\n') {
+                            inst[read - 1] = '\0';
+                        }
+                    }
+                    else {
+                        printf("Erro lendo stdin!\n");
+                        free(nm);
+                        free(inst);
+                        free(titulo);
+                        free(editora);
+                        return;
+                    }
+                    inserir_autores(&autores, nm, inst);
+                    free(nm);
+                    free(inst);
+                }
+                inserir_livros(l, titulo, &autores, ano, edicao, editora);
+                free(titulo);
+                free(editora);
                 break;
             case 2:
-                //listar_livros();
+                int id2;
+                printf("insira o id do livro:\n");
+                scanf("%d", &id2);
+                getchar();
+                listar_livros(l, id2);
                 break;
             case 3:
-                //listar_livros();
+                listar_livros(l, -1);
                 break;
             case 4:
-                //excluir_livros();
+                int id4;
+                printf("insira o id do usuario para ser excluido:\n");
+                scanf("%d", &id4);
+                getchar();
+                excluir_livros(l, id4);
                 break;
             case 5:
-                //alterar
+                int id5;
+                char *tit, *edit, *ano5, *edic5;
+                int nread, an5, edic;
+                size_t len = 0;
+                printf("digite o id do livro a ser alterado:\n");
+                scanf("%d", &id5);
+                getchar();
+                if (buscar_livros(l, id5) == -1) {
+                    printf("Sem livro com id informado!\n");
+                    break;
+                }
+                printf("Digite o titulo alterado (enter para não alterar):\n");
+                nread = getline(&tit, &len, stdin);
+                if (nread != -1) {
+                    if (tit[nread - 1] == '\n') {
+                        tit[nread - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(tit);
+                    free(edit);
+                    free(ano5);
+                    free(edic5);
+                    return;
+                }
+                len = 0;
+                printf("Digite a editora alterada (enter para não alterar):\n");
+                nread = getline(&edit, &len, stdin);
+                if (nread != -1) {
+                    if (edit[nread - 1] == '\n') {
+                        edit[nread - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(tit);
+                    free(edit);
+                    free(ano5);
+                    free(edic5);
+                    return;
+                }
+                len = 0;
+                printf("Digite o ano alterado (enter para não alterar):\n");
+                nread = getline(&ano5, &len, stdin);
+                if (nread != -1) {
+                    if (ano5[nread - 1] == '\n') {
+                        ano5[nread - 1] = '\0';
+                    }
+                    if (sscanf(ano5, "%d", &an5) != 1) {
+                        an5 = -1;
+                    }
+                }
+                len = 0;
+                printf("Digite a edição alterado (enter para não alterar):\n");
+                nread = getline(&edic5, &len, stdin);
+                if (nread != -1) {
+                    if (edic5[nread - 1] == '\n') {
+                        edic5[nread - 1] = '\0';
+                    }
+                    if (sscanf(edic5, "%d", &edic) != 1) {
+                        edic = -1;
+                    }
+                }
+                alterar_livro(l, id5, tit, edit, an5, edic);
+                free(tit);
+                free(edit);
+                free(ano5);
+                free(edic5);
                 break;
             case 6:
                 return;
@@ -484,7 +673,96 @@ void menu_livros(){
     }
 }
 
-void menu_relatorios(){
+void menu_autores(Livros *l){
+    int n = 0, t, id;
+    printf("Digite o id do livro a ser usado:\n");
+    scanf("%d", &id);
+    getchar();
+    if (buscar_livros(l, id) == -1) {
+        printf("Sem livro com id informado!\n");
+        return;
+    }
+    int i = buscar_livros(l, id);
+    while (n == 0) {
+        printf("Digite 1 para adicionar autores\n");
+        printf("Digite 2 para listar todos autores\n");
+        printf("Digite 3 para excluir autores\n");
+        printf("Digite 4 para alterar o id do livro usado\n");
+        printf("Digite 5 para voltar\n");
+        scanf("%d", &t);
+        getchar();
+        switch (t){
+            case 1:
+                char *nm, *inst;
+                int read;
+                size_t size = 0;
+                printf("Insira o nome do autor:\n");
+                read = getline(&nm, &size, stdin);
+                if (read != -1) {
+                    if (nm[read - 1] == '\n') {
+                        nm[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nm);
+                    free(inst);
+                    return;
+                }
+                size = 0;
+                printf("Insira a instituição do autor:\n");
+                read = getline(&inst, &size, stdin);
+                if (read != -1) {
+                    if (inst[read - 1] == '\n') {
+                        inst[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nm);
+                    free(inst);
+                    return;
+                }
+                inserir_autores(l->livro[i].autores, nm, inst);
+            case 2:
+                listar_autores(l->livro[i].autores,"0");
+                break;
+            case 3:
+                char *nm4;
+                printf("insira o nome do autor para ser excluido:\n");
+                read = getline(&nm4, &size, stdin);
+                if (read != -1) {
+                    if (nm4[read - 1] == '\n') {
+                        nm4[read - 1] = '\0';
+                    }
+                }
+                else {
+                    printf("Erro lendo stdin!\n");
+                    free(nm4);
+                    return;
+                }
+                excluir_autores(l->livro[i].autores, nm4);
+                break;
+            case 4:
+                printf("Digite o id do novo livro a ser utilizado\n");
+                scanf("%d", &id);
+                getchar();
+                if (buscar_livros(l, id) == -1) {
+                    printf("Sem livro com id informado!\n");
+                    return;
+                }
+                i = buscar_livros(l, id);
+                break;
+            case 5:
+                return;
+            default:
+                printf("Numero invaldo, tente novamente\n");
+                break;
+        }
+    }
+}
+
+void menu_relatorios(Livros *l, Usuarios *u){
     int n = 0, t;
     while (n == 0) {
         printf("Digite 1 para listar todos os livros\n");
@@ -495,10 +773,10 @@ void menu_relatorios(){
         getchar();
         switch (t){
             case 1:
-                //listar_livros();
+                listar_livros(l, -1);
                 break;
             case 2:
-                //listar_usuarios();
+                listar_usuarios(u, -1);
                 break;
             case 3:
                 //listar_reservas();
@@ -512,14 +790,15 @@ void menu_relatorios(){
     }
 }
 
-void switch_menu(Usuarios *u){
+void switch_menu(Usuarios *u, Livros *l){
     int n = 0, t;
     while (n == 0) {
         printf("Digite 1 para acessar Usuarios\n");
         printf("Digite 2 para acessar Livros\n");
-        printf("Digite 3 para reservas\n");
-        printf("Digite 4 para relatorios\n");
-        printf("Digite 5 para sair\n");
+        printf("Digite 3 para acessar Autores\n");
+        printf("Digite 4 para reservas\n");
+        printf("Digite 5 para relatorios\n");
+        printf("Digite 6 para sair\n");
         scanf("%d", &t);
         getchar();
         switch (t){
@@ -527,18 +806,21 @@ void switch_menu(Usuarios *u){
             menu_usuarios(u);
             break;
         case 2:
-            menu_livros();
+            menu_livros(l);
             break;
         case 3:
-            // menu_reservas();
+            menu_autores(l);
             break;
         case 4:
-            menu_relatorios();
+            //menu_reserva();
             break;
         case 5:
+            menu_relatorios(l, u);
+            break;
+        case 6:
             return;
         default:
-            printf("numero invaldo, tente novamente\n");
+            printf("numero invalido, tente novamente\n");
             break;
         }
     }
@@ -548,8 +830,10 @@ int main(void) {
     srand(time(NULL));
     Usuarios usuarios;
     inic_usuarios(&usuarios);
+    Livros livros;
+    inic_livros(&livros);
     printf("Bem vindo a Biblioteca Hawkings\n");
-    switch_menu(&usuarios);
+    switch_menu(&usuarios, &livros);
     //inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
     //inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
     // listar_usuarios(&usuarios, -1);
