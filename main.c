@@ -3,6 +3,25 @@
 #include <string.h>
 #include <time.h>
 
+#ifndef HAVE_GETLINE
+ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
+    *lineptr = NULL;
+    char buffer[1024];
+    if (fgets(buffer, sizeof(buffer), stream) == NULL)
+        return -1;
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n')
+        buffer[len - 1] = '\0';
+    len = strlen(buffer);
+    *lineptr = realloc(*lineptr, len + 1);
+    if (*lineptr == NULL)
+        return -1;
+    strcpy(*lineptr, buffer);
+    *n = len + 1;
+    return len;
+}
+#endif
+
 struct Autor{
     char *nome;
     char *instituicao;
@@ -123,7 +142,6 @@ void inserir_usuario(Usuarios *u, const char *nm, const char *end, const int tel
                 realloc_error(); //finaliza se o realloc falhar
             }
             u->usuario = tmp;
-            free(tmp);
             u->capacity = u->size + 1;
         }
         u->usuario[u->size].identificador = id; //copia o numero aleatorio para o id do usuario criado
@@ -178,7 +196,6 @@ void excluir_usuario(Usuarios *u, const int id) {
         realloc_error();
     }
     u->usuario = tmp;
-    free(tmp);
     u->capacity = u->size;
 }
 
@@ -225,7 +242,6 @@ void inserir_autores(Autores *a, const char *nm, const char *inst) {
                 realloc_error();
             }
             a->autor = tmp;
-            free(tmp);
             a->capacity = a->size + 1;
         }
         a->autor[a->size].nome = malloc(strlen(nm) + 1);
@@ -257,7 +273,6 @@ void excluir_autores(Autores *a, const char *nm) {
         realloc_error();
     }
     a->autor = tmp;
-    free(tmp);
     a->capacity = a->size;
 }
     
@@ -382,7 +397,6 @@ void excluir_livros(Livros *l, const int id) {
         realloc_error();
     }
     l->livro = tmp;
-    free(tmp);
     l->capacity = l->size;
 }
 
@@ -434,7 +448,6 @@ void inserir_reserva(Reservas *r, const struct tm di, const struct tm df, const 
                 realloc_error();
             }
             r->reserva = tmp;
-            free(tmp);
             r->capacity = r->size + 1;
         }
         r->reserva[r->size].data_inicial = di;
@@ -484,7 +497,6 @@ void excluir_reserva(Reservas *r, const int idu, const int idl) {
         realloc_error();
     }
     r->reserva = tmp;
-    free(tmp);
     r->capacity = r->size;
 }
 
