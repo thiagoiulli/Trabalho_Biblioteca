@@ -1146,21 +1146,21 @@ void switch_menu(Usuarios *u, Livros *l, Reservas *r){
     }
 }
 
+
 int main(void) {
     srand(time(NULL));
+    
     Usuarios usuarios;
-    inic_usuarios(&usuarios);
     Livros livros;
-    inic_livros(&livros);
     Reservas reservas;
+    
     inic_reserva(&reservas);
-    // inserir_usuario(&usuarios, "irineu", "rua sim pq sim", 31987321);
-    // inserir_usuario(&usuarios, "irineu2", "rua sim pq nao", 46165165);
-    // Autores a;
-    // inic_autores(&a);
-    // inserir_autores(&a, "enzo enzo enzo", "ceferno");
-    // inserir_livros(&livros, "eu e meu trabalho", &a, 2025, 1, "hebert richards");
-    printf("Bem vindo a Biblioteca Hawkings\n");
+    inic_usuarios(&usuarios);
+    inic_livros(&livros);
+    
+    printf("Bem vindo a Biblioteca de Edson e Thiago\n\n");
+    
     switch_menu(&usuarios, &livros, &reservas);
+    
     return 0;
 }
