@@ -52,7 +52,7 @@ struct Usuario { //struct dos usuarios
     int identificador;
     char *nome;
     char *endereco; //endereco completo
-    int telefone;
+    long long telefone;
 };
 
 typedef struct {
@@ -106,7 +106,7 @@ void listar_usuarios(const Usuarios *u, const int id) {
             printf("Identificador: %i\n", u->usuario[i].identificador);
             printf("Nome: %s\n", u->usuario[i].nome);
             printf("Endereco: %s\n", u->usuario[i].endereco);
-            printf("Telefone: %d\n", u->usuario[i].telefone);
+            printf("Telefone: %lld\n", u->usuario[i].telefone);
             printf("\n");
         }
         return;
@@ -116,7 +116,7 @@ void listar_usuarios(const Usuarios *u, const int id) {
             printf("Identificador: %i\n", u->usuario[i].identificador);
             printf("Nome: %s\n", u->usuario[i].nome);
             printf("Endereco: %s\n", u->usuario[i].endereco);
-            printf("Telefone: %d\n", u->usuario[i].telefone);
+            printf("Telefone: %lld\n", u->usuario[i].telefone);
             printf("\n");
             return;
         }
@@ -133,7 +133,7 @@ int buscar_usuarios (const Usuarios *u, const int id){ //função que busca um u
     return -1; //usuario nao encontrado
 }
 
-void inserir_usuario(Usuarios *u, const char *nm, const char *end, const int tel) {
+void inserir_usuario(Usuarios *u, const char *nm, const char *end, const long long tel) {
     const int id = rand_int();
     if (buscar_usuarios(u, id) == -1) { //verificar se ha usuario com ID selecionado
         if (u->capacity == u->size) { //verificar se ha memoria ja alocada, caso nao haja, alocar
@@ -158,7 +158,7 @@ void inserir_usuario(Usuarios *u, const char *nm, const char *end, const int tel
     }
 }
 
-void alterar_usuario(const Usuarios *u, const int id, const char *nm, const char *end, const int tel) {
+void alterar_usuario(const Usuarios *u, const int id, const char *nm, const char *end, const long long tel) {
     int i = buscar_usuarios(u, id);
     if (i == -1) {
         printf("Sem usuario com id informado!\n");//verifica se usuario existe antes de alterar
@@ -514,7 +514,7 @@ void menu_usuarios(Usuarios *u){
         switch (t){
             case 1:
                 char *nm, *end;
-                int tel, read;
+                long long tel, read;
                 size_t size = 0;
                 printf("Insira o nome do usuário:\n");
                 read = getline(&nm, &size, stdin);
@@ -544,7 +544,7 @@ void menu_usuarios(Usuarios *u){
                     return;
                 }
                 printf("Insira o telefone do usuário:\n");
-                scanf("%d", &tel);
+                scanf("%lld", &tel);
                 getchar();
                 inserir_usuario(u, nm, end, tel);
                 free(nm);
@@ -570,7 +570,8 @@ void menu_usuarios(Usuarios *u){
             case 5:
                 int id5;
                 char *nome, *endereco, *telefone;
-                int nread, tell;
+                int nread;
+                long long tell;
                 size_t len = 0;
                 printf("digite o id do usuário a ser alterado:\n");
                 scanf("%d", &id5);
@@ -613,7 +614,7 @@ void menu_usuarios(Usuarios *u){
                     if (telefone[nread - 1] == '\n') {
                         telefone[nread - 1] = '\0';
                     }
-                    if (sscanf(telefone, "%d", &tell) != 1) {
+                    if (sscanf(telefone, "%lld", &tell) != 1) {
                         tell = -1;
                     }
                 }
