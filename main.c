@@ -146,7 +146,7 @@ void inserir_usuario(Usuarios *u, const char *nm, const char *end, const long lo
         }
         u->usuario[u->size].identificador = id; //copia o numero aleatorio para o id do usuario criado
         u->usuario[u->size].nome = malloc(strlen(nm) + 1);//aloca a memoria
-        strcpy(u->usuario[u->size].nome, nm);//copia string de nome para o usuario criado
+        strcpy(u->usuario[u->size].nome, nm);//copia string de nome para o usuario criado 
         u->usuario[u->size].endereco = malloc(strlen(end) + 1);//aloca memoria
         strcpy(u->usuario[u->size].endereco, end);//copia string de endereço para o usuario criado
         u->usuario[u->size].telefone = tel;//copia o telefone para o usuario criado
@@ -1146,7 +1146,6 @@ void switch_menu(Usuarios *u, Livros *l, Reservas *r){
         }
     }
 }
-
 
 int main(void) {
     srand(time(NULL));
