@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifndef HAVE_GETLINE
+#ifndef HAVE_GETLINE //código que faz a função geline funcionar em windows
 ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     *lineptr = NULL;
     char buffer[1024];
@@ -25,7 +25,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 struct Autor{
     char *nome;
     char *instituicao;
-};
+};//struct autor
 
 typedef struct { //vetor dinamico de Autor
     struct Autor *autor;
@@ -455,9 +455,6 @@ void inserir_reserva(Reservas *r, const struct tm di, const struct tm df, const 
         r->reserva[r->size].identificador_usuario = idu;
         r->reserva[r->size].identificador_livro = idl;
         r->size++;
-    }
-    else {
-        printf("Erro: Reserva do livro com este usuario ja existe ou data final maior que data inicial!\n"); //FALTA VERIFICAR SE O LIVRO POSSUI RESERVA NA DATA
     }
 }
 
